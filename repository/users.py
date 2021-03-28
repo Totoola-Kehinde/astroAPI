@@ -15,7 +15,7 @@ class users(user):
     def create(self, user):
         if user is not None:
             try:
-                return db.users.insert_one(user.get_as_dict())
+                return db.users.insert_one(dict(user))
             except pymongo.errors.NetworkTimeout as e:
                 error_msg = "Error :{}".format(e)
                 return self.error_msg
@@ -24,7 +24,7 @@ class users(user):
 
     def read(self, email): 
         try:
-            return self.db.users.find({"email":email})
+            return db.users.find({"email":email})
         except pymongo.errors.NetworkTimeout as e:
-            self.error_msg = "Error :{}".format(e)
-            return self.error_msg
+            error_msg = "Error :{}".format(e)
+            return error_msg
