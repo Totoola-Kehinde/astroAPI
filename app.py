@@ -3,7 +3,7 @@ from bson.objectid import ObjectId
 from pydantic import BaseModel, EmailStr, Field
 from repository.users import users
 from models.user import user, userlogin
-from controllers.check import email_exists
+from controllers.check import email_exists, checkhashpassword, checklogincred
 from controllers.hashpassword import hashpassword
 from auth.auth_handler import signJWT
 from auth.auth_bearer import JWTBearer
@@ -35,7 +35,6 @@ class userId(BaseModel):
 def home():
     return{"home":"Homepage"}
 
-message = ''
 @app.post("/user/signup", tags=['user'])
 def create_user( User:user):
     if email_exists(User.email) == False:
@@ -43,19 +42,22 @@ def create_user( User:user):
         newuser = user(id = ObjectId(), name=User.name, email=User.email, password=User.password, dt=User.dt)
 
         userscontroller.create(newuser)
-        message = signJWT(User.email)
+        return signJWT(User.email)
 
-    elif email_exists(User.email) == True:
-        message = 'User Already Exists!'
-    return message
+    return{'Message':'User Already Exists!'}
 
 
 
 @app.post("/user/login", tags=['user'])
 def login(User:userlogin):
-    checkuser = True
+    checkuser: bool
     checkuser = email_exists(User.email)
 
     if checkuser == True:
-        return{"Message":"User does not exist OR incorrect email"}
+        # If password is correct
+        if checkhashpassword(User): 
+            if checklogincred:
+                return signJWT(User.email)
+        return{"message":"Incorrect Password"}
+    return{"Message":"User does not exist OR incorrect email"}
 
