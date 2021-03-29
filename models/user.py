@@ -8,7 +8,7 @@ class user(BaseModel):
     name: str = Field(default=None)
     email: EmailStr = Field(default=None)
     password: str = Field(default=None)
-    dt: datetime.datetime = Field(default=None)
+    created_at: datetime.datetime = Field(default=None)
 
 class userlogin(BaseModel):
 
