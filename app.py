@@ -3,6 +3,8 @@ from bson.objectid import ObjectId
 from pydantic import BaseModel, EmailStr, Field
 from repository.users import users
 from models.user import user, userlogin
+from models.journalfolder import journalfolder
+from models.journalentry import journalentry
 from controllers.check import email_exists, checkhashpassword, checklogincred
 from controllers.hashpassword import hashpassword
 from auth.auth_handler import signJWT
@@ -61,3 +63,7 @@ def login(User:userlogin):
         return{"message":"Incorrect Password"}
     return{"Message":"User does not exist OR incorrect email"}
 
+
+@app.post("/journal", dependencies=[Depends(JWTBearer())], tags=['journal'])
+def create_journal(Journal: journalentry):
+    return ''
