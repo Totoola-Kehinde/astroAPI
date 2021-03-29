@@ -35,27 +35,27 @@ class userId(BaseModel):
 def home():
     return{"home":"Homepage"}
 
-
+message = ''
 @app.post("/user/signup", tags=['user'])
 def create_user( User:user):
-    message = str
     if email_exists(User.email) == False:
         User.password = hashpassword(User.password)
         newuser = user(id = ObjectId(), name=User.name, email=User.email, password=User.password, dt=User.dt)
 
         userscontroller.create(newuser)
-        return signJWT(User.email)
+        message = signJWT(User.email)
 
-    # elif email_exists(User.email) == True:
-    #     message = 'User Already Exists!'
-    # return message
+    elif email_exists(User.email) == True:
+        message = 'User Already Exists!'
+    return message
 
 
 
 @app.post("/user/login", tags=['user'])
 def login(User:userlogin):
-    checkuser = False
+    checkuser = True
     checkuser = email_exists(User.email)
 
-    if checkuser == False:
+    if checkuser == True:
         return{"Message":"User does not exist OR incorrect email"}
+
