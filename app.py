@@ -86,14 +86,14 @@ def current_user(token: str):
 @app.post("/journal", dependencies=[Depends(JWTBearer())], tags=['journal'])
 def create_journal(journal_id: int, token, journal:journalentry):
     token = decodeJWT(token)
-    print(token)
-    newjournal = journalentry(id = ObjectId(), owner=token['user_id'], title=journalentry.journal_title, created_at=journalentry.created_at, note=journalentry.note, updated_at=None)
+    newjournal = journalentry(id = ObjectId(), journal_id=journal_id, owner=token['user_id'], journal_title=journal.journal_title, created_at=journal.created_at, note=journal.note, updated_at=None)
 
     journalscontroller.create(newjournal)
-    return {"Message":"New Journal Created", "Created at":"text"}
+    return {"Message":"New Journal Created", "Created at":newjournal.created_at}
 
 
 
 @app.get("/journal/{journal_id}", dependencies=[Depends(JWTBearer())], tags=['journal'])
-def get_journal(journal_id:int):
-    return journalscontroller.read(journal_id)
+def get_journal(journal_id:int, token):
+    token = decodeJWT(token)
+    return journalscontroller.read(journal_id, token['user_id'])
