@@ -40,7 +40,6 @@ class journalId(BaseModel):
     id: Optional[ObjectIdStr] = Field(alias='_id')
 
 
-
 @app.get("/")
 def home():
     return{"home":"Homepage"}
@@ -85,12 +84,14 @@ def current_user(token: str):
 
 
 @app.post("/journal", dependencies=[Depends(JWTBearer())], tags=['journal'])
-def create_journal(journal
-:journalentry):
-    newjournal = journalentry(title=journalentry.journal_title, created_at=journalentry.created_at, updatedat=None)
+def create_journal(journal_id: int, token, journal:journalentry):
+    token = decodeJWT(token)
+    print(token)
+    newjournal = journalentry(id = ObjectId(), owner=token['user_id'], title=journalentry.journal_title, created_at=journalentry.created_at, note=journalentry.note, updated_at=None)
 
     journalscontroller.create(newjournal)
     return {"Message":"New Journal Created", "Created at":"text"}
+
 
 
 @app.get("/journal/{journal_id}", dependencies=[Depends(JWTBearer())], tags=['journal'])
