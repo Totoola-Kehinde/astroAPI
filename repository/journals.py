@@ -22,11 +22,11 @@ class journals(journalentry):
         else:
             return Exception("Nothing to save, because journal parameter is None")
 
-    def read(self, journal_id, owner):
+    def read(self, journa_id, owner):
         try:
-            if journal_id ==  None:
-                return db.journals.find()
-            return db.journals.find({"journal_id":journal_id}, {"owner":owner})
+            if journa_id == 0:
+                return db.journals.find({"owner":{"$eq":owner}})
+            return db.journals.find_one({"journal_id":{"$eq":journa_id}, "owner":owner})
         except pymongo.errors.NetworkTimeout as e:
             error_msg = "Error :{}".format(e)
             return error_msg
