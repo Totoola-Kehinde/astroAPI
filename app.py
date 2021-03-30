@@ -10,6 +10,10 @@ from controllers.check import email_exists, checkhashpassword, checklogincred
 from controllers.hashpassword import hashpassword
 from auth.auth_handler import signJWT, decodeJWT
 from auth.auth_bearer import JWTBearer
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+from bson.json_util import dumps
+import json
 from typing import Optional
 
 
@@ -51,7 +55,7 @@ def create_user( User:user):
         newuser = user(id = ObjectId(), name=User.name, email=User.email, password=User.password, created_at=User.created_at)
 
         userscontroller.create(newuser)
-        return signJWT(User.email)
+        return JSONResponse(content=signJWT(User.id, User.email))
 
     return{'Message':'User Already Exists!'}
 
@@ -72,15 +76,25 @@ def login(User:userlogin):
         # If password is correct
         if checkhashpassword(User): 
             if checklogincred:
-                return signJWT(User.email)
-        return{"message":"Incorrect Password"}
-    return{"Message":"User does not exist OR incorrect email"}
+                active_user = userscontroller.read(User.email)
+                print(active_user)
+                active = dumps(active_user)
+                active = json.loads(active)
+                active_user_id = active[0]['_id']
+                active_user_id = active_user_id['$oid']
+                print(active_user_id)
+                active_user_email = active[0]['email']
+                result = signJWT(active_user_id, active_user_email)
+                print(result)
+                return JSONResponse(content=result)
+        return JSONResponse(content={"message":"Incorrect Password"})
+    return JSONResponse(content={"Message":"User does not exist OR incorrect email"})
 
 
 @app.get("/user/me", dependencies=[Depends(JWTBearer())], tags=['user'])
 def current_user(token: str):
     activeuser = decodeJWT(token)
-    return {"Active User": activeuser}
+    return JSONResponse(content={"Active User": activeuser})
 
 
 @app.post("/journal", dependencies=[Depends(JWTBearer())], tags=['journal'])
@@ -89,11 +103,13 @@ def create_journal(journal_id: int, token, journal:journalentry):
     newjournal = journalentry(id = ObjectId(), journal_id=journal_id, owner=token['user_id'], journal_title=journal.journal_title, created_at=journal.created_at, note=journal.note, updated_at=None)
 
     journalscontroller.create(newjournal)
-    return {"Message":"New Journal Created", "Created at":newjournal.created_at}
+    return JSONResponse(content={"Message":"New Journal Created", "Created at":newjournal.created_at})
 
 
 
 @app.get("/journal/{journal_id}", dependencies=[Depends(JWTBearer())], tags=['journal'])
 def get_journal(journal_id:int, token):
     token = decodeJWT(token)
-    return journalscontroller.read(journal_id, token['user_id'])
+    print(token)
+    result = journalscontroller.read(journal_id, token['user_id'])
+    return {"message":result}

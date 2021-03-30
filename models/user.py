@@ -1,10 +1,11 @@
 from pydantic import BaseModel, Field, EmailStr
+from typing import Optional
 import datetime
 
 
 class user(BaseModel):
     """ Collection Of Users """
-
+    id : Optional[str] = None
     name: str = Field(default=None)
     email: EmailStr = Field(default=None)
     password: str = Field(default=None)
